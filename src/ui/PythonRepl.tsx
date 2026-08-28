@@ -82,7 +82,11 @@ function PythonRepl({
             } catch (loadError) {
                 if (cancelled) return;
                 setStatus(ReplStatus.Error);
-                showErrorAlert(loadError instanceof Error ? loadError.message : String(loadError));
+                const message = loadError instanceof Error ? loadError.message : String(loadError);
+                // Into the console pane too: the alert is transient and the load failure is the
+                // one error a user must be able to read after the fact.
+                setOutput((previous) => `${previous}${message}\n`);
+                showErrorAlert(message);
             }
         })();
         return () => {
@@ -108,7 +112,9 @@ function PythonRepl({
         } catch (runFailure) {
             // Infra-level failure (not a user Python error, which the runner captures structurally).
             setStatus(ReplStatus.Error);
-            showErrorAlert(runFailure instanceof Error ? runFailure.message : String(runFailure));
+            const message = runFailure instanceof Error ? runFailure.message : String(runFailure);
+            setOutput((previous) => `${previous}${message}\n`);
+            showErrorAlert(message);
         }
     }, [code, session]);
 
@@ -163,6 +169,8 @@ function PythonRepl({
                     completions={completionSource as CodeMirrorProps["completions"]}
                 />
             </Box>
+            {/* matplotlib target, per https://github.com/pyodide/matplotlib-pyodide */}
+            <Box id="pyodide-plot-target-repl" />
             <ReplConsole
                 output={output}
                 error={error}

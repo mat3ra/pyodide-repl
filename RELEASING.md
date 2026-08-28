@@ -13,11 +13,11 @@ Download URL shape:
 https://github.com/mat3ra/pyodide-repl/releases/download/wip-<short-sha>/pyodide-repl.tgz
 ```
 
-Reinstall in `web-app` after a same-commit rebuild (plain `npm install` won't refetch —
-see the linked README for why):
+Reinstall in a consumer after a same-commit rebuild (plain `npm install` won't refetch a URL
+whose content changed — clear the cached tarball first):
 
 ```bash
-npm run mat3ra:install -- pyodide-repl wip-<short-sha>
+npm cache clean --force && npm install
 ```
 
 Delete a pre-release once its commit merges and a real published version supersedes it:

@@ -12,8 +12,12 @@ export type BridgeReceive = (action: IframeMessageSchema["action"], payload: obj
 export default class IframeChildTransport {
     private receive?: BridgeReceive;
 
-    /** "*" until the first host message arrives; replies then target that origin only. */
-    private hostOriginURL = "*";
+    /**
+     * The embedding page's origin, from the referrer when the browser provides it, refined by the
+     * first host message. Falls back to "*" only when opened standalone, where parent === window
+     * and nothing leaves the page.
+     */
+    private hostOriginURL = document.referrer ? new URL(document.referrer).origin : "*";
 
     init(receive: BridgeReceive): void {
         this.receive = receive;
@@ -25,9 +29,9 @@ export default class IframeChildTransport {
     }
 
     private receiveMessage = (event: MessageEvent<IframeMessageSchema>) => {
+        // Only the window that embeds this page is the host — never a sibling or nested frame.
+        if (event.source !== window.parent) return;
         if (event.data?.type !== Type.fromHostToIframe) return;
-        // Trust-on-first-message: the page renders inside the host's iframe, so the first
-        // conforming message pins the origin all replies are addressed to.
         this.hostOriginURL = event.origin;
         this.receive?.(event.data.action, event.data.payload);
     };

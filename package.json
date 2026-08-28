@@ -5,7 +5,7 @@
     "scripts": {
         "lint": "eslint src tests && prettier --write src tests",
         "lint:fix": "eslint --fix --cache src tests && prettier --write src tests",
-        "transpile": "tsc",
+        "transpile": "tsc && tsc --project tsconfig.page.json",
         "prettier": "prettier --check src tests",
         "prepare": "husky install",
         "prepublishOnly": "npm run transpile",
