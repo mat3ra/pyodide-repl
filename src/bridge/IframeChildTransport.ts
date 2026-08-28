@@ -35,6 +35,9 @@ export default class IframeChildTransport {
     send(action: IframeMessageSchema["action"], payload: object): void {
         // Standalone (no embedding host): parent === window, and the message is our own — ignored
         // by receiveMessage's type check, so sending is harmless.
-        window.parent.postMessage({ type: Type.fromIframeToHost, action, payload }, this.hostOriginURL);
+        window.parent.postMessage(
+            { type: Type.fromIframeToHost, action, payload },
+            this.hostOriginURL,
+        );
     }
 }

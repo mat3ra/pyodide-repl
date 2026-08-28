@@ -125,7 +125,9 @@ function deferredFetch() {
     const resolvers: Array<() => void> = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).fetch = async () => {
-        await new Promise<void>((resolve) => resolvers.push(resolve));
+        await new Promise<void>((resolve) => {
+            resolvers.push(resolve);
+        });
         return {
             ok: true,
             status: 200,
@@ -209,7 +211,10 @@ describe("PyodideSession.initialize", () => {
             `https://wheels.example/repl-wheels/${WHEEL} cache=force-cache`,
         ]);
         assert.deepEqual(fake.writtenFiles, [`/tmp/pyodide_wheels/${WHEEL}`]);
-        assert.equal(fake.installs.some(({ spec }) => spec.includes(WHEEL)), false);
+        assert.equal(
+            fake.installs.some(({ spec }) => spec.includes(WHEEL)),
+            false,
+        );
         session.dispose();
     });
 
@@ -223,7 +228,9 @@ describe("PyodideSession.initialize", () => {
 
         await session.initialize(fake);
         const staging = session.stageWheels(["first.whl", "second.whl"]);
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
 
         assert.equal(fetchResolvers.length, 2);
         fetchResolvers.forEach((resolve) => resolve());

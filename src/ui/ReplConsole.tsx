@@ -32,12 +32,10 @@ function ErrorBlock({ error }: { error: PythonError }) {
                 p: 1,
                 borderLeft: `3px solid ${theme.palette.error.main}`,
                 background: alpha(theme.palette.error.main, ERROR_BACKGROUND_OPACITY),
-            }}
-        >
+            }}>
             <Box
                 component="div"
-                sx={{ color: theme.palette.error.main, fontWeight: 700, whiteSpace: "pre-wrap" }}
-            >
+                sx={{ color: theme.palette.error.main, fontWeight: 700, whiteSpace: "pre-wrap" }}>
                 {error.ename}: {error.evalue}
             </Box>
             {error.traceback && (
@@ -51,8 +49,7 @@ function ErrorBlock({ error }: { error: PythonError }) {
                             color: theme.palette.text.secondary,
                             fontSize: "0.72rem",
                         },
-                    }}
-                >
+                    }}>
                     <Box component="summary">Traceback</Box>
                     <Box
                         component="pre"
@@ -61,8 +58,7 @@ function ErrorBlock({ error }: { error: PythonError }) {
                             mt: 0.5,
                             whiteSpace: "pre-wrap",
                             color: theme.palette.error.light,
-                        }}
-                    >
+                        }}>
                         {error.traceback}
                     </Box>
                 </Box>
@@ -93,13 +89,17 @@ function ReplConsole({ output, error, onClear }: ReplConsoleProps) {
                 // Take a share of the panel when open; shrink to just the header bar when collapsed.
                 flex: open ? EXPANDED_CONSOLE_FLEX : COLLAPSED_CONSOLE_FLEX,
                 borderTop: `1px solid ${theme.palette.grey[800]}`,
-            }}
-        >
+            }}>
             <Stack direction="row" alignItems="center" spacing={0.5} sx={{ px: 1, py: 0.25 }}>
-                <IconButton size="small" onClick={() => setOpen((value) => !value)} sx={{ p: 0.25 }}>
+                <IconButton
+                    size="small"
+                    onClick={() => setOpen((value) => !value)}
+                    sx={{ p: 0.25 }}>
                     <Typography variant="caption">{open ? "▾" : "▸"}</Typography>
                 </IconButton>
-                <Typography variant="caption" sx={{ flexGrow: 1, color: theme.palette.text.secondary }}>
+                <Typography
+                    variant="caption"
+                    sx={{ flexGrow: 1, color: theme.palette.text.secondary }}>
                     {error ? `Console · ${error.ename}` : "Console"}
                 </Typography>
                 <Button size="small" color="secondary" disabled={!hasContent} onClick={onClear}>
@@ -119,8 +119,7 @@ function ReplConsole({ output, error, onClear }: ReplConsoleProps) {
                         fontFamily: MONOSPACE_FONT_FAMILY,
                         fontSize: "0.78rem",
                         lineHeight: 1.5,
-                    }}
-                >
+                    }}>
                     {output && (
                         <Box component="pre" sx={{ m: 0, whiteSpace: "pre-wrap" }}>
                             {output}

@@ -1,5 +1,5 @@
-import CodeMirror, { type CodeMirrorProps } from "@mat3ra/cove/dist/other/codemirror/CodeMirror";
 import { showErrorAlert } from "@mat3ra/cove/dist/other/alerts";
+import CodeMirror, { type CodeMirrorProps } from "@mat3ra/cove/dist/other/codemirror/CodeMirror";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
@@ -125,14 +125,12 @@ function PythonRepl({
                     event.stopPropagation();
                     runCode();
                 }
-            }}
-        >
+            }}>
             <Stack
                 direction="row"
                 alignItems="center"
                 spacing={1}
-                sx={{ p: 1, borderBottom: `1px solid ${theme.palette.grey[800]}` }}
-            >
+                sx={{ p: 1, borderBottom: `1px solid ${theme.palette.grey[800]}` }}>
                 <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>
                     Python REPL
                 </Typography>
@@ -150,8 +148,7 @@ function PythonRepl({
                     color="success"
                     disabled={isBusy}
                     onClick={runCode}
-                    title="Run (Shift+Enter)"
-                >
+                    title="Run (Shift+Enter)">
                     Run
                 </Button>
             </Stack>
