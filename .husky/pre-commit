@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run lint:fix
+npm run transpile
+# dist/ is gitignored - not staged here
