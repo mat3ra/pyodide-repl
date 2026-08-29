@@ -1,0 +1,9 @@
+dist/
+build/
+node_modules/
+.eslintcache
+.idea/
+.DS_Store
+
+# Prebuilt wheels for the made environment, downloaded by scripts/provision-wheels.mjs.
+public/packages/
