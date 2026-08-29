@@ -22,3 +22,6 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Build the embeddable page
+        run: npm run build
