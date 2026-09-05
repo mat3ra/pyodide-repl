@@ -23,5 +23,13 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # The wheels only change when the list in madeProfile.ts does; a jupyterlite.mat3ra.com
+      # outage must not fail unrelated builds.
+      - name: Cache provisioned wheels
+        uses: actions/cache@v4
+        with:
+          path: public/packages
+          key: made-wheels-${{ hashFiles('src/environment/madeProfile.ts') }}
+
       - name: Build the embeddable page
         run: npm run build

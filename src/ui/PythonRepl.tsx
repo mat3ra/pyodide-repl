@@ -1,5 +1,5 @@
 import { showErrorAlert } from "@mat3ra/cove/dist/other/alerts";
-import CodeMirror from "@mat3ra/cove/dist/other/codemirror/CodeMirror";
+import CodeMirror, { type CodeMirrorProps } from "@mat3ra/cove/dist/other/codemirror/CodeMirror";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
@@ -7,8 +7,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { makePythonCompletionSource } from "../completions/pythonCompletions";
 import type { PythonError, PythonSessionInterface } from "../session/PyodideSession";
 import ReplConsole from "./ReplConsole";
 
@@ -58,6 +59,8 @@ function PythonRepl({
     const [code, setCode] = useState<string>(defaultCode);
     const [output, setOutput] = useState<string>("");
     const [error, setError] = useState<PythonError | null>(null);
+
+    const completionSource = useMemo(() => makePythonCompletionSource(session), [session]);
 
     // A ref, not effect deps: an unmemoized callback would otherwise restart the load and wipe output.
     const callbacksRef = useRef({ onReady, onBeforeRun, onRunSuccess });
@@ -162,6 +165,8 @@ function PythonRepl({
                     options={{ lineNumbers: true }}
                     theme={theme.palette.mode}
                     language="python"
+                    // `completions` is typed non-nullable there, but a CM6 source may return null.
+                    completions={completionSource as CodeMirrorProps["completions"]}
                 />
             </Box>
             {/* matplotlib target, per https://github.com/pyodide/matplotlib-pyodide */}

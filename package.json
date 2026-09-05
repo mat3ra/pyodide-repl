@@ -12,7 +12,10 @@
         "test": "npm run lint && npm run transpile && npm run test:unit",
         "test:unit": "tsx --test tests/*.tests.ts",
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "provision-wheels": "node scripts/provision-wheels.mjs",
+        "predev": "npm run provision-wheels",
+        "prebuild": "npm run provision-wheels"
     },
     "repository": {
         "type": "git",
@@ -39,6 +42,7 @@
         "react-dom": "^17.0.2"
     },
     "devDependencies": {
+        "@codemirror/autocomplete": "^6.18.0",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@exabyte-io/eslint-config": "2025.5.13-0",

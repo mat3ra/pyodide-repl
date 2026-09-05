@@ -72,8 +72,14 @@ class FakePyodide {
     }
 
     /** JSON the completion helpers return; the real ones always hand back a JSON string. */
+    completionsJson = "[]";
+
+    signatureJson = '{"signature": "", "docstring": ""}';
+
     runPython(code: string) {
         this.runPythonCalls.push(code);
+        if (code.startsWith("_repl_complete(")) return this.completionsJson;
+        if (code.startsWith("_repl_describe(")) return this.signatureJson;
         return "";
     }
 
@@ -96,7 +102,7 @@ const makeSpec = () => ({
     loadPackages: ["numpy"],
     pypiPinnedPackages: ["sympy==1.12", "ase==3.25.0"],
     wheelFilenames: [WHEEL],
-    postWheelPackages: ["mat3ra-made", "example-post-wheel==1.0.0"],
+    postWheelPackages: ["mat3ra-made", "jedi==0.19.2"],
     wheelBaseUrl: "https://wheels.example/repl-wheels",
 });
 
@@ -149,7 +155,7 @@ describe("PyodideSession.initialize", () => {
                 "ase==3.25.0",
                 "emfs:/tmp/pyodide_wheels/example_package-1.0.0-py3-none-any.whl",
                 "mat3ra-made",
-                "example-post-wheel==1.0.0",
+                "jedi==0.19.2",
             ],
         );
         session.dispose();
@@ -394,6 +400,33 @@ describe("PyodideSession.execute", () => {
         const session = new PyodideSession(makeSpec());
 
         await assert.rejects(() => session.execute("1"), /not initialized/);
+        session.dispose();
+    });
+});
+
+describe("PyodideSession completions", () => {
+    it("passes source, line and column as globals, never interpolated into the source", async () => {
+        stubFetch({ ok: true });
+        const fake = new FakePyodide();
+        fake.completionsJson = '[{"name": "create_supercell", "type": "function"}]';
+        const { session } = await initializedSession(fake);
+
+        const completions = session.complete("create_sup", 1, 10);
+
+        assert.deepEqual(completions, [{ name: "create_supercell", type: "function" }]);
+        assert.equal(fake.globals.store.get("_repl_c_src"), "create_sup");
+        assert.equal(fake.globals.store.get("_repl_c_line"), 1);
+        assert.equal(fake.globals.store.get("_repl_c_column"), 10);
+        const lastCall = fake.runPythonCalls[fake.runPythonCalls.length - 1];
+        assert.equal(lastCall, "_repl_complete(_repl_c_src, _repl_c_line, _repl_c_column)");
+        session.dispose();
+    });
+
+    it("returns no completions before initialization rather than throwing at the editor", () => {
+        const session = new PyodideSession(makeSpec());
+
+        assert.deepEqual(session.complete("x", 1, 1), []);
+        assert.equal(session.describe("x", 1, 1, "x"), null);
         session.dispose();
     });
 });
