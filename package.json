@@ -9,7 +9,10 @@
         "prettier": "prettier --check src tests",
         "prepare": "husky install",
         "prepublishOnly": "npm run transpile",
-        "test": "npm run lint && npm run transpile"
+        "test": "npm run lint && npm run transpile && npm run test:unit",
+        "test:unit": "tsx --test tests/*.tests.ts",
+        "dev": "vite",
+        "build": "vite build"
     },
     "repository": {
         "type": "git",
@@ -23,6 +26,9 @@
         "README.md"
     ],
     "license": "Apache-2.0",
+    "dependencies": {
+        "@mat3ra/esse": "2026.8.18-2"
+    },
     "peerDependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -33,9 +39,17 @@
         "react-dom": "^17.0.2"
     },
     "devDependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
         "@exabyte-io/eslint-config": "2025.5.13-0",
+        "@mat3ra/cove": "2026.8.19-4",
+        "@mui/icons-material": "^5.16.14",
+        "@mui/material": "^5.16.14",
+        "@types/react": "^17.0.2",
+        "@types/react-dom": "^17.0.2",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
+        "@vitejs/plugin-react": "^4.3.4",
         "eslint": "^7.32.0",
         "eslint-config-airbnb": "^19.0.2",
         "eslint-config-prettier": "^8.5.0",
@@ -50,7 +64,10 @@
         "eslint-plugin-simple-import-sort": "^7.0.0",
         "husky": "^9.1.7",
         "prettier": "^2.8.8",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
         "tsx": "^4.19.2",
-        "typescript": "^5.7.2"
+        "typescript": "^5.7.2",
+        "vite": "^5.4.11"
     }
 }
