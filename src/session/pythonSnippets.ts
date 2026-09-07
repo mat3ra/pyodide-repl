@@ -39,3 +39,60 @@ async def _repl_execute(_repl_source):
             ),
         }
 `;
+
+export const MAX_COMPLETIONS_PER_REQUEST = 60;
+
+/**
+ * Defines `_repl_complete` / `_repl_describe`, used by complete()/describe().
+ *
+ * Jedi is optional: this page is generic and a host may configure an environment without it, so a
+ * missing import degrades to "no completions" rather than breaking the whole namespace setup.
+ */
+export const PY_DEFINE_COMPLETER = `
+# Jedi-backed completion for the editor. jedi.Interpreter completes against the LIVE REPL globals (not
+# just static analysis of the typed text), so it knows the user's actual variables, their attributes,
+# imported modules and keywords — not only anything pre-imported. Called on every keystroke from the
+# JS side (PyodideSession.complete/describe), so this stays cheap: signature and docstring lookup is a
+# separate, on-demand call (describe), not done for every candidate up front.
+import json as _repl_cjson
+try:
+    import jedi as _repl_jedi
+except ImportError:
+    _repl_jedi = None
+
+def _repl_complete(_repl_source, _repl_line, _repl_column):
+    if _repl_jedi is None:
+        return "[]"
+    try:
+        _repl_completions = _repl_jedi.Interpreter(_repl_source, [globals()]).complete(_repl_line, _repl_column)
+    except Exception:
+        return "[]"
+    # Surface the current call's keyword-argument (param) completions first — inside a call Jedi
+    # otherwise returns them alphabetically, buried under builtins. Mirrors how IDEs rank params.
+    _repl_params = [_completion for _completion in _repl_completions if _completion.type == "param"]
+    _repl_others = [_completion for _completion in _repl_completions if _completion.type != "param"]
+    _repl_ordered = (_repl_params + _repl_others)[:${MAX_COMPLETIONS_PER_REQUEST}]
+    return _repl_cjson.dumps(
+        [{"name": _completion.name, "type": _completion.type} for _completion in _repl_ordered]
+    )
+
+def _repl_describe(_repl_source, _repl_line, _repl_column, _repl_target_name):
+    if _repl_jedi is None:
+        return "null"
+    try:
+        for _completion in _repl_jedi.Interpreter(_repl_source, [globals()]).complete(_repl_line, _repl_column):
+            if _completion.name == _repl_target_name:
+                try:
+                    _repl_signatures = _completion.get_signatures()
+                    _repl_signature = _repl_signatures[0].to_string() if _repl_signatures else ""
+                except Exception:
+                    _repl_signature = ""
+                try:
+                    _repl_docstring = _completion.docstring(raw=True)
+                except Exception:
+                    _repl_docstring = ""
+                return _repl_cjson.dumps({"signature": _repl_signature, "docstring": _repl_docstring})
+    except Exception:
+        pass
+    return _repl_cjson.dumps({"signature": "", "docstring": ""})
+`;
