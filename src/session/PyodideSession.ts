@@ -1,4 +1,5 @@
-import { PY_DEFINE_RUNNER } from "./pythonSnippets";
+import type { PythonCompletion, PythonSignatureInfo } from "../completions/pythonCompletions";
+import { PY_DEFINE_COMPLETER, PY_DEFINE_RUNNER } from "./pythonSnippets";
 
 // Pyodide has no published types; use `any` until they are available upstream (see PyodideLoader).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +55,13 @@ export interface PythonSessionInterface {
     isRunning: boolean;
     load(onProgress?: (message: string) => void): Promise<void>;
     execute(code: string): Promise<PythonExecutionResult>;
+    complete(source: string, line: number, column: number): PythonCompletion[];
+    describe(
+        source: string,
+        line: number,
+        column: number,
+        name: string,
+    ): PythonSignatureInfo | null;
 }
 
 let scriptLoadPromise: Promise<void> | null = null;
@@ -195,6 +203,7 @@ export class PyodideSession implements PythonSessionInterface {
         await installInOrder(postWheelPackages, true, "Installing package");
 
         pyodide.runPython(PY_DEFINE_RUNNER);
+        pyodide.runPython(PY_DEFINE_COMPLETER);
         await this.spec.setupNamespace?.(this.pyodide, log);
         this.initialized = true;
     }
@@ -284,6 +293,41 @@ export class PyodideSession implements PythonSessionInterface {
         ) as PythonError;
         if (raw.destroy) raw.destroy();
         return error;
+    }
+
+    /**
+     * `line` is 1-based, `column` 0-based (Jedi's convention). Resolved against the LIVE namespace.
+     * Arguments go through `globals`, never interpolated into the source — an injection site the moment
+     * a caller passes a non-number.
+     */
+    complete(source: string, line: number, column: number): PythonCompletion[] {
+        if (!this.initialized) return [];
+        this.setCompletionArguments(source, line, column);
+        return JSON.parse(
+            this.pyodide.runPython("_repl_complete(_repl_c_src, _repl_c_line, _repl_c_column)"),
+        );
+    }
+
+    describe(
+        source: string,
+        line: number,
+        column: number,
+        name: string,
+    ): PythonSignatureInfo | null {
+        if (!this.initialized) return null;
+        this.setCompletionArguments(source, line, column);
+        this.pyodide.globals.set("_repl_c_name", name);
+        return JSON.parse(
+            this.pyodide.runPython(
+                "_repl_describe(_repl_c_src, _repl_c_line, _repl_c_column, _repl_c_name)",
+            ),
+        );
+    }
+
+    private setCompletionArguments(source: string, line: number, column: number): void {
+        this.pyodide.globals.set("_repl_c_src", source);
+        this.pyodide.globals.set("_repl_c_line", line);
+        this.pyodide.globals.set("_repl_c_column", column);
     }
 
     /**
